@@ -13,6 +13,9 @@ import EditStudent from "./components/crud/students/EditStudent";
 
 import Page1 from "./components/Page1";
 import Page2 from "./components/Page2";
+import CreateTeacher from "./components/crud/teachers/CreateTeacher";
+import Listteacher from "./components/crud/teachers/ListTeacher";
+import EditTeacher from "./components/crud/teachers/EditTeacher";
 
 function App() {
   return (
@@ -36,6 +39,14 @@ function App() {
                 List Student
               </NavDropdown.Item>
             </NavDropdown>
+            <NavDropdown id="nav-dropdown-dark-example" title="Teacher">
+              <NavDropdown.Item href="/createTeacher">
+                Create Teacher
+              </NavDropdown.Item>
+              <NavDropdown.Item href="/listTeacher">
+                List Teacher
+              </NavDropdown.Item>
+            </NavDropdown>
             <li className="navitem">
               <Link to="/about" className="nav-link">
                 About
@@ -50,6 +61,9 @@ function App() {
         <Route path="createStudent" element={<CreateStudent />} />
         <Route path="listStudent" element={<ListStudent />} />
         <Route path="editStudent/:id" element={<EditStudent />} />
+        <Route path="createTeacher" element={<CreateTeacher />} />
+        <Route path="listTeacher" element={<Listteacher />} />
+        <Route path="editTeacher/:id" element={<EditTeacher />} />
       </Routes>
     </div>
   );
