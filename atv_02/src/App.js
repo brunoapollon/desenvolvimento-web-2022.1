@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Dropdown, NavDropdown } from "react-bootstrap";
 //import "./App.css";
 
 import Home from "./components/Home";
@@ -27,16 +28,14 @@ function App() {
                 Home
               </Link>
             </li>
-            <li className="navitem">
-              <Link to="/createStudent" className="nav-link">
+            <NavDropdown id="nav-dropdown-dark-example" title="Student">
+              <NavDropdown.Item href="/createStudent">
                 Create Student
-              </Link>
-            </li>
-            <li className="navitem">
-              <Link to="/listStudent" className="nav-link">
+              </NavDropdown.Item>
+              <NavDropdown.Item href="/listStudent">
                 List Student
-              </Link>
-            </li>
+              </NavDropdown.Item>
+            </NavDropdown>
             <li className="navitem">
               <Link to="/about" className="nav-link">
                 About
