@@ -1,28 +1,50 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { students } from "./data.js";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+//import { students } from './data.js'
 
-function EditStudent() {
+function EditStudent(props) {
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [ira, setIRA] = useState(0);
   const params = useParams();
+  const navigate = useNavigate();
 
   //https://pt-br.reactjs.org/docs/hooks-effect.html
   useEffect(() => {
-    //console.log(params.id)
-    const student = students[params.id];
-    //console.log(student)
-    setName(student.name);
-    setCourse(student.course);
-    setIRA(student.ira);
+    //axios.get('http://localhost:3001/students/' + params.id)
+    axios
+      .get("http://localhost:3002/crud/students/retrieve/" + params.id)
+      .then((res) => {
+        setName(res.data.name);
+        setCourse(res.data.course);
+        setIRA(res.data.ira);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, [params.id]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(name);
-    console.log(course);
-    console.log(ira);
+    const updatedStudent = {
+      name,
+      course,
+      ira,
+    };
+    //axios.put('http://localhost:3001/students/' + params.id, updatedStudent)
+    axios
+      .put(
+        "http://localhost:3002/crud/students/update/" + params.id,
+        updatedStudent
+      )
+      .then((res) => {
+        //console.log(res.data)
+        //props.history.push('/listStudent');
+        //console.log(props)
+        navigate("/listStudent");
+      })
+      .catch((error) => console.log(error));
   };
 
   return (

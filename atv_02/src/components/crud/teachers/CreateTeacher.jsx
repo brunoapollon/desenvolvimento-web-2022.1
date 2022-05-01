@@ -1,16 +1,27 @@
+import axios from "axios";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function CreateTeacher() {
   const [name, setName] = useState("");
   const [university, setUniversity] = useState("");
   const [degree, setDegree] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(name);
-    console.log(university);
-    console.log(degree);
+
+    const newProfessor = { name, university, degree };
+    axios
+      .post("http://localhost:3002/crud/professors/create", newProfessor)
+      .then((res) => {
+        console.log(res.data._id);
+        alert(`Professor ${name} criado com sucesso.`);
+        navigate("/listTeacher");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (

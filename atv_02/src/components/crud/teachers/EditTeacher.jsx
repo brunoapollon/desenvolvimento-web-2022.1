@@ -1,28 +1,44 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { teachers } from "./data.js";
+import { Link, useNavigate, useParams } from "react-router-dom";
+// import { teachers } from "./data.js";
 
 function EditTeacher() {
   const [name, setName] = useState("");
   const [university, setUniversity] = useState("");
   const [degree, setDegree] = useState("");
   const params = useParams();
+  const navigate = useNavigate();
 
-  //https://pt-br.reactjs.org/docs/hooks-effect.html
   useEffect(() => {
-    //console.log(params.id)
-    const teacher = teachers[params.id];
-    //console.log(teacher)
-    setName(teacher.name);
-    setUniversity(teacher.university);
-    setDegree(teacher.degree);
+    axios
+      .get("http://localhost:3002/crud/professors/retrieve/" + params.id)
+      .then((res) => {
+        setName(res.data.name);
+        setUniversity(res.data.university);
+        setDegree(res.data.degree);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, [params.id]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(name);
-    console.log(university);
-    console.log(degree);
+    const updateProfessor = {
+      name,
+      university,
+      degree,
+    };
+    axios
+      .put(
+        "http://localhost:3002/crud/professors/update/" + params.id,
+        updateProfessor
+      )
+      .then((res) => {
+        navigate("/listTeacher");
+      })
+      .catch((error) => console.log(error));
   };
 
   return (
