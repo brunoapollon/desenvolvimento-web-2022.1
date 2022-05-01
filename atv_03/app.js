@@ -4,6 +4,7 @@ var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 
 var studentRoute = require("./routes/student/StudentRoute");
+var professorRoute = require("./routes/professor/ProfessorRoute");
 
 var app = express();
 
@@ -23,5 +24,6 @@ app.use(function (req, res, next) {
 
 //app.use('/api/v1/users', users);
 app.use("/crud/students", studentRoute);
+app.use("/crud/professors", professorRoute);
 
 module.exports = app;
