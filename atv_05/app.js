@@ -5,6 +5,7 @@ var bodyParser = require("body-parser");
 require("./db/mongo.connection");
 
 var studentRoute = require("./routes/student/student.routes");
+var professorRoute = require("./routes/professor/professor.routes");
 
 var app = express();
 
@@ -23,5 +24,6 @@ app.use(function (req, res, next) {
 });
 
 app.use("/crud/students", studentRoute);
+app.use("/crud/professors", professorRoute);
 
 module.exports = app;
