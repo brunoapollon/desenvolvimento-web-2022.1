@@ -2,7 +2,21 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function CreateStudent() {
+import FirebaseContext from "../../../utils/FirebaseContext";
+import FirebaseStudentService from "../../../services/FirebaseStudentService";
+
+const CreateStudentPage = (props) => (
+  <FirebaseContext.Consumer>
+    {(firebase) => {
+      //if(firebase.getAuthenticatedUser()!=null)
+      return (
+        <CreateStudent firebase={firebase} userLogged={props.userLogged} />
+      );
+    }}
+  </FirebaseContext.Consumer>
+);
+
+function CreateStudent(props) {
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [ira, setIRA] = useState(0);
@@ -12,16 +26,28 @@ function CreateStudent() {
     event.preventDefault();
 
     const newStudent = { name, course, ira };
-    axios
-      .post("http://localhost:3002/crud/students/create", newStudent)
-      .then((res) => {
-        console.log(res.data._id);
-        alert(`Aluno ${name} criado com sucesso.`);
+    //axios.post('http://localhost:3001/students', newStudent)
+    /*axios.post('http://localhost:3002/crud/students/create', newStudent)
+            .then(
+                (res) => {
+                    console.log(res.data._id)
+                    alert(`Aluno ${name} criado com sucesso.`)
+                    navigate("/listStudent")
+                }
+            )
+            .catch(
+                (error) => {
+                    console.log(error)
+                }
+            )
+        */
+    FirebaseStudentService.create(
+      props.firebase.getFirestoreDb(),
+      () => {
         navigate("/listStudent");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      },
+      newStudent
+    );
 
     console.log(name);
     console.log(course);
@@ -32,51 +58,55 @@ function CreateStudent() {
     <>
       <main>
         <h2>Criar Estudante</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Nome: </label>
-            <input
-              type="text"
-              className="form-control"
-              value={name == null || name === undefined ? "" : name}
-              name="name"
-              onChange={(event) => {
-                setName(event.target.value);
-              }}
-            />
-          </div>
-          <div className="form-group">
-            <label>Curso: </label>
-            <input
-              type="text"
-              className="form-control"
-              value={course ?? ""}
-              name="course"
-              onChange={(event) => {
-                setCourse(event.target.value);
-              }}
-            />
-          </div>
-          <div className="form-group">
-            <label>IRA: </label>
-            <input
-              type="text"
-              className="form-control"
-              value={ira ?? 0}
-              name="ira"
-              onChange={(event) => {
-                setIRA(event.target.value);
-              }}
-            />
-          </div>
-          <div className="form-group" style={{ paddingTop: 20 }}>
-            <input
-              type="submit"
-              value="Criar Estudante"
-              className="btn btn-primary"
-            />
-          </div>
-        </form>
+        {props.userLogged ? (
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Nome: </label>
+              <input
+                type="text"
+                className="form-control"
+                value={name == null || name === undefined ? "" : name}
+                name="name"
+                onChange={(event) => {
+                  setName(event.target.value);
+                }}
+              />
+            </div>
+            <div className="form-group">
+              <label>Curso: </label>
+              <input
+                type="text"
+                className="form-control"
+                value={course ?? ""}
+                name="course"
+                onChange={(event) => {
+                  setCourse(event.target.value);
+                }}
+              />
+            </div>
+            <div className="form-group">
+              <label>IRA: </label>
+              <input
+                type="text"
+                className="form-control"
+                value={ira ?? 0}
+                name="ira"
+                onChange={(event) => {
+                  setIRA(event.target.value);
+                }}
+              />
+            </div>
+            <div className="form-group" style={{ paddingTop: 20 }}>
+              <input
+                type="submit"
+                value="Criar Estudante"
+                className="btn btn-primary"
+              />
+            </div>
+          </form>
+        ) : (
+          <h1>Você deve estar logado para criar um estudante</h1>
+        )}
       </main>
       <nav>
         <Link to="/">Home</Link>
@@ -85,4 +115,4 @@ function CreateStudent() {
   );
 }
 
-export default CreateStudent;
+export default CreateStudentPage;

@@ -4,21 +4,38 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 import TeacherTableRow from "./TeacherTableRow";
+import FirebaseContext from "../../../utils/FirebaseContext";
+import FirebaseTeacherService from "../../../services/FirebaseTeacherService";
+
 // import { teachers } from "./data.js";
 
-function Listteacher() {
+const ListTeacherPage = (props) => (
+  <FirebaseContext.Consumer>
+    {(firebase) => (
+      <ListTeacher firebase={firebase} userLogged={props.userLogged} />
+    )}
+  </FirebaseContext.Consumer>
+);
+
+function ListTeacher(props) {
   const [professors, setProfessors] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3002/crud/professors/list")
-      .then((res) => {
-        setProfessors(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
+    // axios
+    //   .get("http://localhost:3002/crud/professors/list")
+    //   .then((res) => {
+    //     setProfessors(res.data);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+    FirebaseTeacherService.list_onSnapshot(
+      props.firebase.getFirestoreDb(),
+      (students) => {
+        setProfessors(students);
+      }
+    );
+  }, [props]);
 
   function deleteProfessorById(_id) {
     let professorsTemp = professors;
@@ -39,6 +56,8 @@ function Listteacher() {
           teacher={professor}
           key={i}
           deleteProfessorById={deleteProfessorById}
+          firestoreDb={props.firebase.getFirestoreDb()}
+          userLogged={props.userLogged}
         />
       );
     });
@@ -70,4 +89,4 @@ function Listteacher() {
   );
 }
 
-export default Listteacher;
+export default ListTeacherPage;
