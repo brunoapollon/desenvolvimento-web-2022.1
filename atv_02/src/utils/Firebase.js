@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-
 import { firebaseConfig } from "../keys/firebase_key";
 
 export default class Firebase {
@@ -18,11 +17,11 @@ export default class Firebase {
     return getAuth(this.app);
   }
 
-  getAuthenticatedUser() {
-    return this.user;
+  setUser(user) {
+    this.user = user;
   }
 
-  setAuthenticatedUser(user) {
-    this.user = user;
+  getUser() {
+    return this.user;
   }
 }

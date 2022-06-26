@@ -4,12 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 
 import FirebaseContext from "../../../utils/FirebaseContext";
 import FirebaseTeacherService from "../../../services/FirebaseTeacherService";
+import RestrictPage from "../../../utils/RestrictPage";
 
-const CreateTeacherPage = (props) => (
+const CreateTeacherPage = ({ setShowToast, setToast }) => (
   <FirebaseContext.Consumer>
     {(firebase) => {
       return (
-        <CreateTeacher firebase={firebase} userLogged={props.userLogged} />
+        <RestrictPage isLogged={firebase.getUser() != null}>
+          <CreateTeacher
+            firebase={firebase}
+            setShowToast={setShowToast}
+            setToast={setToast}
+          />
+        </RestrictPage>
       );
     }}
   </FirebaseContext.Consumer>
@@ -20,10 +27,36 @@ function CreateTeacher(props) {
   const [university, setUniversity] = useState("");
   const [degree, setDegree] = useState("");
   const navigate = useNavigate();
+  const [validate, setValidate] = useState({
+    name: "",
+    university: "",
+    degree: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const validateFields = () => {
+    let res = true;
+    setValidate({ name: "", university: "", degree: "" });
+
+    if (name === "" || university === "" || degree === "") {
+      props.setToast({ header: "Erro!", body: "Preencha todos os campos." });
+      props.setShowToast(true);
+      setLoading(false);
+      res = false;
+      let validateObj = { name: "", university: "", degree: "" };
+      if (name === "") validateObj.name = "is-invalid";
+      if (university === "") validateObj.university = "is-invalid";
+      if (degree === "") validateObj.degree = "is-invalid";
+      console.log(university);
+      setValidate(validateObj);
+    }
+    return res;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
+    setLoading(true);
+    if (!validateFields()) return;
     const newProfessor = { name, university, degree };
     // axios
     //   .post("http://localhost:3002/crud/professors/create", newProfessor)
@@ -38,9 +71,43 @@ function CreateTeacher(props) {
     FirebaseTeacherService.create(
       props.firebase.getFirestoreDb(),
       () => {
-        navigate("/listProfessor");
+        props.setToast({
+          header: "Sucesso!",
+          body: `Professor ${name} criado com sucesso.`,
+        });
+        props.setShowToast(true);
+        setLoading(false);
+        navigate("/listTeacher");
       },
       newProfessor
+    );
+  };
+
+  const renderSubmitButton = () => {
+    if (loading) {
+      return (
+        <div style={{ paddingTop: 20 }}>
+          <button className="btn btn-primary" type="button" disabled>
+            <span
+              className="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span style={{ marginLeft: 10 }}>Carregando...</span>
+          </button>
+        </div>
+      );
+    }
+    return (
+      <>
+        <div className="form-group" style={{ paddingTop: 20 }}>
+          <input
+            type="submit"
+            value="Efetuar Cadastro"
+            className="btn btn-primary"
+          />
+        </div>
+      </>
     );
   };
 
@@ -48,7 +115,7 @@ function CreateTeacher(props) {
     <>
       <main>
         <h2>Criar Professor</h2>
-        {props.userLogged ? (
+        {props.firebase.getUser() ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Nome: </label>
@@ -86,13 +153,7 @@ function CreateTeacher(props) {
                 }}
               />
             </div>
-            <div className="form-group" style={{ paddingTop: 20 }}>
-              <input
-                type="submit"
-                value="Criar Professor"
-                className="btn btn-primary"
-              />
-            </div>
+            {renderSubmitButton()}
           </form>
         ) : (
           <h1>Você deve estar logado para criar um professor.</h1>

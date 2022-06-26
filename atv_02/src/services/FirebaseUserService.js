@@ -1,21 +1,40 @@
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 
 export default class FirebaseUserService {
-  static login = (auth, email, password, callback) => {
-    signInWithEmailAndPassword(auth, email, password)
+  static signup = (auth, login, password, callback) => {
+    createUserWithEmailAndPassword(auth, login, password)
       .then((userCredential) => {
-        //console.log(userCredential.user)
+        callback(true, userCredential.user);
+      })
+      .catch((error) => {
+        callback(false, error.code);
+        console.log(error.code);
+      });
+  };
+
+  static login = (auth, login, password, callback) => {
+    signInWithEmailAndPassword(auth, login, password)
+      .then((userCredential) => {
         callback(userCredential.user);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        callback(null);
+        console.log(error);
+      });
   };
 
   static logout = (auth, callback) => {
     signOut(auth)
-      .then(() => callback(true))
+      .then(() => {
+        callback(true);
+      })
       .catch((error) => {
-        console.log(error);
         callback(false);
+        console.log(error);
       });
   };
 }

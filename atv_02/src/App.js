@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 import Home from "./components/Home";
 import About from "./components/About";
+import SignUp from "./components/SignUp";
 
 import CreateStudent from "./components/crud/students/CreateStudent";
 import ListStudent from "./components/crud/students/ListStudent";
@@ -15,6 +15,8 @@ import EditTeacher from "./components/crud/teachers/EditTeacher";
 import FirebaseContext from "./utils/FirebaseContext";
 import FirebaseUserService from "./services/FirebaseUserService";
 
+import MyToast from "./utils/MyToast";
+
 const AppPage = () => (
   <FirebaseContext.Consumer>
     {(firebase) => <App firebase={firebase} />}
@@ -22,42 +24,49 @@ const AppPage = () => (
 );
 
 function App(props) {
-  const [userLogged, setUserLogged] = React.useState(false);
+  const [logged, setLogged] = useState(false);
+
+  const [showToast, setShowToast] = useState(false); //TOAST
+  const [toast, setToast] = useState({ header: "", body: "" }); //TOAST
+
   const navigate = useNavigate();
 
-  const renderUserAndLogoutButton = () => {
-    if (userLogged) {
-      return (
-        <div style={{ paddingRight: 20 }}>
-          Olá, {JSON.parse(localStorage.getItem("user")).email}
-          <button
-            onClick={() => {
-              logout();
-            }}
-            style={{ marginLeft: 20 }}
-          >
-            Logout
-          </button>
-        </div>
-      );
-    }
-    return;
-  };
-
-  React.useEffect(() => {
-    if (localStorage.getItem("user") !== "null") setUserLogged(true);
-  }, []);
-
   const logout = () => {
-    FirebaseUserService.logout(props.firebase.getAuthentication(), (value) => {
-      if (value) {
-        props.firebase.setAuthenticatedUser(null);
-        localStorage.setItem("user", "null");
-        setUserLogged(false);
+    FirebaseUserService.logout(props.firebase.getAuthentication(), (res) => {
+      if (res) {
+        props.firebase.setUser(null);
+        setLogged(false);
         navigate("/");
       }
     });
   };
+
+  const renderLoginButtonLogout = () => {
+    if (props.firebase.getUser())
+      return (
+        <div style={{ marginRight: 20 }}>
+          Olá, {props.firebase.getUser().email}
+          <button onClick={() => logout()} style={{ marginLeft: 20 }}>
+            Logout
+          </button>
+        </div>
+      );
+    return;
+  };
+
+  //TOAST
+  const renderToast = () => {
+    return (
+      <MyToast
+        show={showToast}
+        header={toast.header}
+        body={toast.body}
+        setShowToast={setShowToast}
+        bg="secondary"
+      />
+    );
+  };
+
   return (
     <div className="container">
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -112,54 +121,88 @@ function App(props) {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Professor
+                Teacher
               </a>
               <ul
                 className="dropdown-menu"
                 aria-labelledby="navbarDropdownMenuLink"
               >
                 <li className="navitem">
-                  <Link to="/createProfessor" className="nav-link">
-                    Criar Professor
+                  <Link to="/createTeacher" className="nav-link">
+                    Criar Teacher
                   </Link>
                 </li>
                 <li className="navitem">
-                  <Link to="/listProfessor" className="nav-link">
-                    Listar Professor
+                  <Link to="/listTeacher" className="nav-link">
+                    Listar Teacher
                   </Link>
                 </li>
               </ul>
             </li>
           </ul>
         </div>
-        {renderUserAndLogoutButton()}
+        {renderToast()}
+        {renderLoginButtonLogout()}
       </nav>
       <Routes>
-        <Route path="/" element={<Home setUserLogged={setUserLogged} />} />
+        <Route
+          path="/"
+          element={
+            <Home
+              setLogged={setLogged}
+              setShowToast={setShowToast}
+              setToast={setToast}
+            />
+          }
+        />
         <Route path="about" element={<About />} />
         <Route
+          path="signup"
+          element={
+            <SignUp
+              setLogged={setLogged}
+              setShowToast={setShowToast}
+              setToast={setToast}
+            />
+          }
+        />
+
+        <Route
           path="createStudent"
-          element={<CreateStudent userLogged={userLogged} />}
+          element={
+            <CreateStudent setShowToast={setShowToast} setToast={setToast} />
+          }
         />
         <Route
           path="listStudent"
-          element={<ListStudent userLogged={userLogged} />}
+          element={
+            <ListStudent setShowToast={setShowToast} setToast={setToast} />
+          }
         />
         <Route
           path="editStudent/:id"
-          element={<EditStudent userLogged={userLogged} />}
+          element={
+            <EditStudent setShowToast={setShowToast} setToast={setToast} />
+          }
+        />
+
+        <Route
+          path="createTeacher"
+          element={
+            <CreateTeacher setShowToast={setShowToast} setToast={setToast} />
+          }
         />
         <Route
-          path="createProfessor"
-          element={<CreateTeacher userLogged={userLogged} />}
+          path="listTeacher"
+          element={
+            <ListTeacher setShowToast={setShowToast} setToast={setToast} />
+          }
         />
         <Route
-          path="listProfessor"
-          element={<ListTeacher userLogged={userLogged} />}
-        />
-        <Route
-          path="editProfessor/:id"
-          element={<EditTeacher userLogged={userLogged} />}
+          path="editTeacher/:id"
+          element={
+            <EditTeacher setShowToast={setShowToast} setToast={setToast} />
+          }
         />
       </Routes>
     </div>

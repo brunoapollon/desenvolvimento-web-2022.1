@@ -6,19 +6,29 @@ import axios from "axios";
 import TeacherTableRow from "./TeacherTableRow";
 import FirebaseContext from "../../../utils/FirebaseContext";
 import FirebaseTeacherService from "../../../services/FirebaseTeacherService";
+import RestrictPage from "../../../utils/RestrictPage";
 
 // import { teachers } from "./data.js";
 
-const ListTeacherPage = (props) => (
+const ListTeacherPage = ({ setShowToast, setToast }) => (
   <FirebaseContext.Consumer>
-    {(firebase) => (
-      <ListTeacher firebase={firebase} userLogged={props.userLogged} />
-    )}
+    {(firebase) => {
+      return (
+        <RestrictPage isLogged={firebase.getUser() != null}>
+          <ListTeacher
+            firebase={firebase}
+            setShowToast={setShowToast}
+            setToast={setToast}
+          />
+        </RestrictPage>
+      );
+    }}
   </FirebaseContext.Consumer>
 );
 
 function ListTeacher(props) {
   const [professors, setProfessors] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // axios
@@ -29,9 +39,11 @@ function ListTeacher(props) {
     //   .catch((error) => {
     //     console.log(error);
     //   });
+    setLoading(true);
     FirebaseTeacherService.list_onSnapshot(
       props.firebase.getFirestoreDb(),
       (students) => {
+        setLoading(false);
         setProfessors(students);
       }
     );

@@ -4,20 +4,29 @@ import { Link } from "react-router-dom";
 
 import StudentTableRow from "./StudentTableRow";
 //import { students } from './data.js'
-
 import FirebaseContext from "../../../utils/FirebaseContext";
 import FirebaseStudentService from "../../../services/FirebaseStudentService";
+import RestrictPage from "../../../utils/RestrictPage";
 
-const ListStudentPage = (props) => (
+const ListStudentPage = ({ setShowToast, setToast }) => (
   <FirebaseContext.Consumer>
-    {(firebase) => (
-      <ListStudent firebase={firebase} userLogged={props.userLogged} />
-    )}
+    {(firebase) => {
+      return (
+        <RestrictPage isLogged={firebase.getUser() != null}>
+          <ListStudent
+            firebase={firebase}
+            setShowToast={setShowToast}
+            setToast={setToast}
+          />
+        </RestrictPage>
+      );
+    }}
   </FirebaseContext.Consumer>
 );
 
 function ListStudent(props) {
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     //axios.get("http://localhost:3001/students")
@@ -33,13 +42,17 @@ function ListStudent(props) {
                     }
                 )*/
     //console.log(props.firebase.getFirestoreDb())
+    //FirebaseStudentService.list(
+    setLoading(true);
     FirebaseStudentService.list_onSnapshot(
       props.firebase.getFirestoreDb(),
       (students) => {
+        //console.log(students)
+        setLoading(false);
         setStudents(students);
       }
     );
-  }, [props]);
+  }, [props.firebase]);
 
   function deleteStudentById(_id) {
     let studentsTemp = students;
@@ -49,10 +62,51 @@ function ListStudent(props) {
         studentsTemp.splice(i, 1);
       }
     }
-    setStudents([...studentsTemp]);
+    setStudents([...studentsTemp]); //deve-se criar um outro array para disparar o re-render
+    //setStudents(studentsTemp)
+    //setFlag(!flag)
   }
 
-  function generateTable() {
+  function renderTable() {
+    if (loading) {
+      //mostrar um spinner!
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 100,
+          }}
+        >
+          <div
+            className="spinner-border"
+            style={{ width: "3rem", height: "3rem" }}
+            role="status"
+          />
+          Carregando...
+        </div>
+      );
+    }
+
+    return (
+      <table className="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Curso</th>
+            <th>IRA</th>
+            <th>Nome</th>
+            <th colSpan={2} style={{ textAlign: "center" }}></th>
+          </tr>
+        </thead>
+        <tbody>{renderTableBody()}</tbody>
+      </table>
+    );
+  }
+
+  function renderTableBody() {
     if (!students) return;
     return students.map((student, i) => {
       return (
@@ -60,8 +114,9 @@ function ListStudent(props) {
           student={student}
           key={i}
           deleteStudentById={deleteStudentById}
-          firestoreDb={props.firebase.getFirestoreDb()}
-          userLogged={props.userLogged}
+          firestore={props.firebase.getFirestoreDb()}
+          setShowToast={props.setShowToast}
+          setToast={props.setToast}
         />
       );
     });
@@ -71,18 +126,7 @@ function ListStudent(props) {
     <>
       <main>
         <h2>Listar Estudantes</h2>
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Curso</th>
-              <th>IRA</th>
-              <th colSpan={2} style={{ textAlign: "center" }}></th>
-            </tr>
-          </thead>
-          <tbody>{generateTable()}</tbody>
-        </table>
+        {renderTable()}
       </main>
       <nav>
         <Link to="/">Home</Link>

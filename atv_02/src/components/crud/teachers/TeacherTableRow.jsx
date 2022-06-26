@@ -26,7 +26,7 @@ const TeacherTableRow = (props) => {
       <td>{university}</td>
       <td>{degree}</td>
       <td style={{ textAlign: "center" }}>
-        <Link to={`/editProfessor/${_id}`} className="btn btn-primary">
+        <Link to={`/editTeacher/${_id}`} className="btn btn-primary">
           Editar
         </Link>
       </td>
